@@ -10,19 +10,49 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
+// Security & config
+import dotenv from 'dotenv';
+import helmet from 'helmet';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+
+dotenv.config();
+
 const app = express();
-const port = 55000;
+const port = process.env.PORT || 55000;
 
 // Obter caminho absoluto para a pasta uploads
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const uploadsPath = path.join(__dirname, 'uploads');
 
-app.use(express.json());
-app.use(cors());
-app.use(routes);
-app.use("/uploads", express.static(uploadsPath));
+// Basic middleware
+app.use(helmet());
+app.use(compression());
 
+// Rate limiter (basic)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // limite por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+
+app.use(express.json());
+
+// CORS: restringir em produção via FRONTEND_URL
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*',
+};
+app.use(cors(corsOptions));
+
+app.use(routes);
+
+// Servir uploads com cache-control (7 dias)
+app.use("/uploads", express.static(uploadsPath, { maxAge: '7d' }));
+
+// Conectar ao DB e sincronizar (somente sync minimal — em produção use migrations)
 async function conecta_db() {
   try {
     await sequelize.authenticate();
@@ -41,8 +71,19 @@ async function conecta_db() {
 }
 conecta_db();
 
+// Health check
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 app.get("/", (req, res) => {
   res.send("API Projeto TCC - Padaria");
+});
+
+// Error handler (não retornar stack em produção)
+app.use((err, req, res, next) => {
+  console.error(err);
+  const status = err.status || 500;
+  const message = process.env.NODE_ENV === 'production' ? 'Erro interno' : err.message;
+  res.status(status).json({ error: message });
 });
 
 app.listen(port, () => {
