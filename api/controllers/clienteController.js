@@ -2,6 +2,11 @@ import { Cliente } from "../models/Cliente.js";
 import { Logs } from "../models/logs.js";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+
+const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_KEY || "defaultsecret";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
+const SALT_ROUNDS = 10;
 
 export const clienteIndex = async (req, res) => {
   try {
@@ -32,13 +37,15 @@ export const clienteCreate = async (req, res) => {
     const id = uuidv4();
     const token = uuidv4();
 
+    const hashedSenha = await bcrypt.hash(senha, SALT_ROUNDS);
+
     const cliente = await Cliente.create({
       id,
-      senha,
+      senha: hashedSenha,
       nome,
       token,
       email,
-      admin: "0",
+      admin: false,
     });
 
     // Criar log para o cliente cadastrado
@@ -48,7 +55,7 @@ export const clienteCreate = async (req, res) => {
       data: new Date(),
     });
 
-    return res.status(201).json({ cliente, token });
+    return res.status(201).json({ cliente: { id: cliente.id, nome: cliente.nome, email: cliente.email }, token });
   } catch (error) {
     return res.status(500).send(error);
   }
@@ -63,21 +70,18 @@ export const clienteLogin = async (req, res) => {
       return;
     }
 
-    const cliente = await Cliente.findOne({ where: { email, senha } });
+    const cliente = await Cliente.findOne({ where: { email } });
 
     if (!cliente) {
-      console.log(
-        "Tentativa de login com e-mail:",
-        email,
-        "e senha:",
-        senha,
-        "falhou."
-      );
       res.status(400).json({ erro: "E-mail ou senha incorretos" });
       return;
     }
 
-    console.log("Login bem sucedido para o cliente com ID:", cliente.id);
+    const match = await bcrypt.compare(senha, cliente.senha);
+    if (!match) {
+      res.status(400).json({ erro: "E-mail ou senha incorretos" });
+      return;
+    }
 
     // Adiciona o log de login do cliente
     await Logs.create({
@@ -86,19 +90,13 @@ export const clienteLogin = async (req, res) => {
       data: new Date(),
     });
 
-    console.log("Tipo de usuário:", cliente.admin ? "admin" : "cliente");
-    res
-      .status(200)
-      .json({
-        token: cliente.token,
-        userType: cliente.admin ? "admin" : "cliente",
-        userName: cliente.nome,
-      });
+    // Gerar JWT
+    const tokenJwt = jwt.sign({ userId: cliente.id, userName: cliente.nome }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+
+    res.status(200).json({ token: tokenJwt, legacyToken: cliente.token, userType: cliente.admin ? "admin" : "cliente", userName: cliente.nome });
   } catch (error) {
     console.error("Erro durante a tentativa de login:", error);
-    res
-      .status(500)
-      .send({ erro: "Ocorreu um erro ao processar a solicitação" });
+    res.status(500).send({ erro: "Ocorreu um erro ao processar a solicitação" });
   }
 };
 
@@ -120,4 +118,4 @@ export const clienteShow = async (req, res) => {
     console.error("Erro ao buscar cliente:", error);
     res.status(500).json({ error: "Erro ao buscar cliente" });
   }
-}
+};
