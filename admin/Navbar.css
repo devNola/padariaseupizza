@@ -1,0 +1,42 @@
+/* Estilo personalizado para a Navbar da Padaria */
+.padaria-navbar {
+    background: linear-gradient(90deg, #fff8e1 0%, #ffe0b2 100%) !important;
+    box-shadow: 0 2px 10px rgba(160, 82, 45, 0.08);
+    border-bottom: 1.5px solid #ffe0b2;
+}
+
+.padaria-navbar .MuiToolbar-root {
+    min-height: 64px;
+}
+
+.padaria-navbar .MuiAvatar-root {
+    background: #fffbe9;
+    border: 2px solid #ffe0b2;
+    color: #a0522d;
+    font-weight: 700;
+}
+
+.padaria-navbar .MuiTypography-h6 {
+    color: #a0522d !important;
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.padaria-navbar .MuiInputBase-root {
+    background: #fffbe9;
+    border-radius: 12px;
+}
+
+.padaria-navbar .MuiInputBase-input {
+    color: #a0522d !important;
+}
+
+.padaria-navbar .MuiSvgIcon-root {
+    color: #a0522d !important;
+}
+
+.padaria-navbar .MuiBadge-badge {
+    background: #ff9800;
+    color: #fff;
+}

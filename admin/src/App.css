@@ -1,0 +1,54 @@
+/* Estilo geral da aplicação */
+.App {
+  text-align: center;
+  font-family: 'Roboto', sans-serif; /* Fonte mais moderna e legível */
+}
+
+/* Estilo do logo da aplicação */
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+  transition: transform 0.3s ease-in-out; /* Suaviza a transformação */
+}
+
+/* Animação do logo quando não há preferência por movimento reduzido */
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+/* Estilo do cabeçalho da aplicação */
+.App-header {
+  background-color: #1e272e; /* Cor de fundo mais moderna */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: #f5f6fa; /* Cor mais clara para melhor contraste */
+}
+
+/* Estilo dos links da aplicação */
+.App-link {
+  color: #74b9ff;
+  text-decoration: none; /* Remove o sublinhado padrão dos links */
+  border-bottom: 2px solid transparent; /* Adiciona uma linha inferior animada */
+  transition: color 0.3s ease, border-bottom 0.3s ease; /* Suaviza a transição de cor e borda */
+}
+
+.App-link:hover {
+  color: #0984e3;
+  border-bottom: 2px solid #0984e3; /* Linha inferior aparece no hover */
+}
+
+/* Animação de rotação do logo */
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
