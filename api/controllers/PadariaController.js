@@ -4,24 +4,40 @@ import path from "path";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from "fs";
-import crypto from "crypto";
+import { v4 as uuidv4 } from 'uuid';
 
 // Obter caminho absoluto para a pasta uploads
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const uploadsPath = path.join(__dirname, '..', 'uploads');
 
-// Configuração do multer para salvar em disco
+// Garantir que a pasta uploads exista
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+}
+
+// Configuração do multer para salvar em disco com validação e nomes únicos
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadsPath); // Usar caminho absoluto
   },
   filename: function (req, file, cb) {
-    // nome único para evitar conflitos
-    cb(null, Date.now() + path.extname(file.originalname));
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${uuidv4()}${ext}`);
   },
 });
-export const upload = multer({ storage: storage });
+
+const fileFilter = (req, file, cb) => {
+  const allowed = ["image/jpeg", "image/png", "image/webp"];
+  if (allowed.includes(file.mimetype)) cb(null, true);
+  else cb(new Error("Tipo de arquivo não permitido"), false);
+};
+
+export const upload = multer({
+  storage: storage,
+  fileFilter,
+  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB
+});
 
 export const padariaIndex = async (req, res) => {
   try {
