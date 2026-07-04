@@ -31,7 +31,7 @@ import {
   obterTodosOsLogs,
 } from "./controllers/admincontroller.js";
 import { verificaLogin } from "./middlewares/verificaLogin.js";
-
+import { createPreference, webhook } from "./controllers/paymentController.js";
 
 const router = Router();
 
@@ -51,6 +51,9 @@ router
 router.post('/carrinho/adicionar', adicionarAoCarrinho);
 router.post('/carrinho/finalizar', finalizarCompra);
 
+// Payments (Mercado Pago)
+router.post('/payments/create_preference', verificaLogin, createPreference);
+router.post('/payments/webhook', webhook);
 
 // Produtos
 router
