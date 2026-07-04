@@ -6,6 +6,7 @@ import { Cliente } from "./models/Cliente.js";
 import { Padaria } from "./models/padaria.js";
 import { Avaliacao } from "./models/Avaliacao.js";
 import { Logs } from "./models/logs.js";
+import { Order } from "./models/Order.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -65,6 +66,8 @@ async function conecta_db() {
     console.log("Tabela de Avaliação criada com sucesso");
     await Logs.sync();
     console.log("Tabela de Logs criada com sucesso");
+    await Order.sync();
+    console.log("Tabela de Orders criada com sucesso");
   } catch (error) {
     console.error("Erro na conexão com o banco: ", error);
   }
