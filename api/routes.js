@@ -32,6 +32,7 @@ import {
 } from "./controllers/admincontroller.js";
 import { verificaLogin } from "./middlewares/verificaLogin.js";
 import { createPreference, webhook } from "./controllers/paymentController.js";
+import { validateFinalizarCompra, validateCreatePreference } from './middlewares/validators.js';
 
 const router = Router();
 
@@ -49,10 +50,10 @@ router
 
 // Logs de Carrinho/Finalizar Compra
 router.post('/carrinho/adicionar', adicionarAoCarrinho);
-router.post('/carrinho/finalizar', finalizarCompra);
+router.post('/carrinho/finalizar', validateFinalizarCompra, finalizarCompra);
 
 // Payments (Mercado Pago)
-router.post('/payments/create_preference', verificaLogin, createPreference);
+router.post('/payments/create_preference', verificaLogin, validateCreatePreference, createPreference);
 router.post('/payments/webhook', webhook);
 
 // Produtos
