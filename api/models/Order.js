@@ -31,4 +31,8 @@ export const Order = sequelize.define("order", {
     type: DataTypes.STRING(100),
     allowNull: true,
   },
+  init_point: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
 });
