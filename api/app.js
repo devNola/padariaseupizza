@@ -7,6 +7,7 @@ import { Padaria } from "./models/padaria.js";
 import { Avaliacao } from "./models/Avaliacao.js";
 import { Logs } from "./models/logs.js";
 import { Order } from "./models/Order.js";
+import { Notification } from "./models/Notification.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -17,6 +18,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
+import logger from './logger.js';
 
 dotenv.config();
 
@@ -65,19 +67,22 @@ app.use("/uploads", express.static(uploadsPath, { maxAge: '7d' }));
 async function conecta_db() {
   try {
     await sequelize.authenticate();
-    console.log("Conexão com banco de dados realizada com sucesso");
+    logger.info({ msg: 'Conexão com banco de dados realizada com sucesso' });
     await Cliente.sync();
-    console.log("Tabela Cliente criada com sucesso");
+    logger.info({ msg: 'Tabela Cliente criada com sucesso' });
     await Padaria.sync();
-    console.log("Tabela de Produtos criada com sucesso");
+    logger.info({ msg: 'Tabela de Produtos criada com sucesso' });
     await Avaliacao.sync();
-    console.log("Tabela de Avaliação criada com sucesso");
+    logger.info({ msg: 'Tabela de Avaliação criada com sucesso' });
     await Logs.sync();
-    console.log("Tabela de Logs criada com sucesso");
+    logger.info({ msg: 'Tabela de Logs criada com sucesso' });
     await Order.sync();
-    console.log("Tabela de Orders criada com sucesso");
+    logger.info({ msg: 'Tabela de Orders criada com sucesso' });
+    await Notification.sync();
+    logger.info({ msg: 'Tabela de Notifications criada com sucesso' });
   } catch (error) {
-    console.error("Erro na conexão com o banco: ", error);
+    logger.error({ msg: 'Erro na conexão com o banco', err: error });
+    process.exit(1);
   }
 }
 conecta_db();
@@ -91,12 +96,31 @@ app.get("/", (req, res) => {
 
 // Error handler (não retornar stack em produção)
 app.use((err, req, res, next) => {
-  console.error(err);
+  logger.error({ err });
   const status = err.status || 500;
   const message = process.env.NODE_ENV === 'production' ? 'Erro interno' : err.message;
   res.status(status).json({ error: message });
 });
 
-app.listen(port, () => {
-  console.log(`Servidor Rodando na Porta: ${port}`);
+// Start server with graceful shutdown
+const server = app.listen(port, () => {
+  logger.info(`Servidor Rodando na Porta: ${port}`);
 });
+
+const shutdown = async () => {
+  logger.info('Iniciando graceful shutdown');
+  try {
+    await sequelize.close();
+    logger.info('Conexão com DB encerrada');
+    server.close(() => {
+      logger.info('Servidor encerrado');
+      process.exit(0);
+    });
+  } catch (err) {
+    logger.error({ err, msg: 'Erro durante shutdown' });
+    process.exit(1);
+  }
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
