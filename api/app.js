@@ -16,6 +16,7 @@ import dotenv from 'dotenv';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import morgan from 'morgan';
 
 dotenv.config();
 
@@ -28,8 +29,14 @@ const __dirname = dirname(__filename);
 const uploadsPath = path.join(__dirname, 'uploads');
 
 // Basic middleware
+app.disable('x-powered-by');
 app.use(helmet());
 app.use(compression());
+
+// Logger in non-production
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
 
 // Rate limiter (basic)
 const limiter = rateLimit({
@@ -40,11 +47,12 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-app.use(express.json());
+// Body parser with size limit
+app.use(express.json({ limit: '100kb' }));
 
 // CORS: restringir em produção via FRONTEND_URL
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
+  origin: process.env.NODE_ENV === 'production' ? process.env.FRONTEND_URL : '*',
 };
 app.use(cors(corsOptions));
 
