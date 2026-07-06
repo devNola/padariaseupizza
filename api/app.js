@@ -19,6 +19,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import logger from './logger.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 dotenv.config();
 
@@ -63,26 +64,28 @@ app.use(routes);
 // Servir uploads com cache-control (7 dias)
 app.use("/uploads", express.static(uploadsPath, { maxAge: '7d' }));
 
-// Conectar ao DB e sincronizar (somente sync minimal — em produção use migrations)
+// Conectar ao DB and sync in development (use migrations in production)
 async function conecta_db() {
   try {
     await sequelize.authenticate();
-    logger.info({ msg: 'Conexão com banco de dados realizada com sucesso' });
-    await Cliente.sync();
-    logger.info({ msg: 'Tabela Cliente criada com sucesso' });
-    await Padaria.sync();
-    logger.info({ msg: 'Tabela de Produtos criada com sucesso' });
-    await Avaliacao.sync();
-    logger.info({ msg: 'Tabela de Avaliação criada com sucesso' });
-    await Logs.sync();
-    logger.info({ msg: 'Tabela de Logs criada com sucesso' });
-    await Order.sync();
-    logger.info({ msg: 'Tabela de Orders criada com sucesso' });
-    await Notification.sync();
-    logger.info({ msg: 'Tabela de Notifications criada com sucesso' });
+    logger.info('Conexão com banco de dados realizada com sucesso');
+
+    if (process.env.NODE_ENV !== 'production') {
+      // lightweight sync for development only
+      await Cliente.sync();
+      await Padaria.sync();
+      await Avaliacao.sync();
+      await Logs.sync();
+      await Order.sync();
+      // Notification.sync kept for dev convenience
+      await Notification.sync();
+      logger.info('Tabelas sincronizadas (development mode)');
+    } else {
+      logger.info('Production mode: using migrations (do not sync)');
+    }
   } catch (error) {
-    logger.error({ msg: 'Erro na conexão com o banco', err: error });
-    process.exit(1);
+    logger.error({ err: error, msg: 'Erro na conexão com o banco' });
+    if (process.env.NODE_ENV === 'production') process.exit(1);
   }
 }
 conecta_db();
@@ -94,28 +97,24 @@ app.get("/", (req, res) => {
   res.send("API Projeto TCC - Padaria");
 });
 
-// Error handler (não retornar stack em produção)
-app.use((err, req, res, next) => {
-  logger.error({ err });
-  const status = err.status || 500;
-  const message = process.env.NODE_ENV === 'production' ? 'Erro interno' : err.message;
-  res.status(status).json({ error: message });
-});
+// Use centralized error handler
+app.use(errorHandler);
 
-// Start server with graceful shutdown
-const server = app.listen(port, () => {
-  logger.info(`Servidor Rodando na Porta: ${port}`);
-});
+// Start server with graceful shutdown (only when not in test environment)
+let server;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(port, () => {
+    logger.info(`Servidor Rodando na Porta: ${port}`);
+  });
+}
 
 const shutdown = async () => {
   logger.info('Iniciando graceful shutdown');
   try {
     await sequelize.close();
     logger.info('Conexão com DB encerrada');
-    server.close(() => {
-      logger.info('Servidor encerrado');
-      process.exit(0);
-    });
+    if (server) server.close(() => { logger.info('Servidor encerrado'); process.exit(0); });
+    else process.exit(0);
   } catch (err) {
     logger.error({ err, msg: 'Erro durante shutdown' });
     process.exit(1);
@@ -124,3 +123,5 @@ const shutdown = async () => {
 
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
+
+export default app;
