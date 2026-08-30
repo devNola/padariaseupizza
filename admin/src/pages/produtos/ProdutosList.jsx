@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-// eslint-disable-next-line no-unused-vars
-import axios from "axios";
 import {
   Paper,
   Table,
@@ -27,7 +25,7 @@ import Swal from "sweetalert2";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AdicionarProduto from "./AddProduto";
 import EditProduto from "./EditProduto";
-import { api } from "../../services/api";
+import { api, API_URL } from "../../services/api";
 
 const modalStyle = {
   position: "absolute",
@@ -61,7 +59,7 @@ export default function ProdutosList() {
         imagem: produto.imagem
           ? produto.imagem.startsWith("http")
             ? produto.imagem
-            : `http://localhost:55000/uploads/${produto.imagem}`
+            : `${API_URL}/uploads/${produto.imagem}`
           : null
       }));
 
@@ -109,20 +107,9 @@ export default function ProdutosList() {
 
     if (confirmation.isConfirmed) {
       try {
-        const response = await fetch(`http://localhost:55000/padaria/destroy/${id}`, {
-          method: "DELETE",
-        });
-
-        if (response.ok) {
-          setRows((prevRows) => prevRows.filter((row) => row.id !== id));
-          Swal.fire("Deletado!", "O produto foi removido com sucesso.", "success");
-        } else {
-          Swal.fire(
-            "Erro!",
-            "Não foi possível excluir o produto. Tente novamente.",
-            "error"
-          );
-        }
+        await api.delete(`/padaria/destroy/${id}`);
+        setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+        Swal.fire("Deletado!", "O produto foi removido com sucesso.", "success");
       } catch (error) {
         Swal.fire(
           "Erro!",
@@ -135,16 +122,9 @@ export default function ProdutosList() {
 
   const toggleHighlight = async (id) => {
     try {
-      const response = await fetch(`http://localhost:55000/padariaDestaca/${id}`, {
-        method: "POST",
-      });
-
-      if (response.ok) {
-        fetchProdutos(); // Atualiza a lista de produtos
-        Swal.fire("Sucesso!", "Produto destacado com sucesso.", "success");
-      } else {
-        Swal.fire("Erro!", "Não foi possível destacar o produto. Tente novamente.", "error");
-      }
+      await api.post(`/padariaDestaca/${id}`);
+      fetchProdutos();
+      Swal.fire("Sucesso!", "Produto destacado com sucesso.", "success");
     } catch (error) {
       Swal.fire("Erro!", "Ocorreu um erro ao tentar destacar o produto. Tente novamente.", "error");
     }

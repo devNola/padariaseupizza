@@ -26,7 +26,7 @@ import {
   AttachMoney,
 } from "@mui/icons-material";
 import Swal from "sweetalert2";
-import axios from "axios";
+import { api } from "../../services/api";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   position: "relative",
@@ -99,11 +99,9 @@ export default function AdicionarProduto({ CloseEvent, onProductAdded }) {
         formData.append("imagem", imagem);
       }
 
-      const response = await axios.post(
-        "http://localhost:55000/padariacreat",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const response = await api.post('/padariacreat', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
       if (response.status === 201) {
         Swal.fire({
@@ -123,7 +121,6 @@ export default function AdicionarProduto({ CloseEvent, onProductAdded }) {
         icon: "error",
         confirmButtonText: "Entendi",
       });
-      console.error("Erro ao adicionar produto:", error);
     } finally {
       setIsSubmitting(false);
     }

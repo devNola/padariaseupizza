@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Close as CloseIcon, BakeryDining, AttachMoney } from "@mui/icons-material";
 import Swal from "sweetalert2";
-import axios from "axios";
+import { api, API_URL } from "../../services/api";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
     position: "relative",
@@ -49,7 +49,7 @@ export default function EditProduto({ CloseEvent, produto, onProductUpdated }) {
             produto.imagem?.startsWith("http")
                 ? produto.imagem
                 : produto.imagem
-                    ? `http://localhost:55000/uploads/${produto.imagem}`
+                    ? `${API_URL}/uploads/${produto.imagem}`
                     : ""
         );
         setImagem(null); // Limpa imagem ao trocar produto
@@ -103,15 +103,9 @@ export default function EditProduto({ CloseEvent, produto, onProductUpdated }) {
                 formData.append("imagem", imagem);
             }
 
-            const response = await axios.put(
-                `http://localhost:55000/alterar/${produto.id}`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
+            const response = await api.put(`/alterar/${produto.id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
 
             if (response.status === 200) {
                 Swal.fire("Sucesso!", "Produto atualizado com sucesso!", "success");
