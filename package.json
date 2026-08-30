@@ -1,0 +1,16 @@
+{
+  "name": "padaria-seu-pizza",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "install:all": "npm install --prefix web && npm install --prefix api",
+    "dev": "concurrently --names API,WEB --prefix-colors magenta,cyan \"npm --prefix api run dev\" \"npm --prefix web run dev\"",
+    "dev:web": "npm --prefix web run dev",
+    "dev:api": "npm --prefix api run dev",
+    "build": "npm --prefix web run build",
+    "start:api": "npm --prefix api start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

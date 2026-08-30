@@ -5,7 +5,7 @@ import Titulo from '../components/Titulo';
 import { assets } from '../assets/assets';
 
 const Produtos = () => {
-  const { produtos } = useContext(CarrinhoContext);
+  const { produtos, produtosLoading, produtosError } = useContext(CarrinhoContext);
   const [showFilter, setShowFilter] = useState(false);
   const [categoriasSelecionadas, setCategoriasSelecionadas] = useState([]);
   const [sortType, setSortType] = useState('relevant');
@@ -98,6 +98,22 @@ const Produtos = () => {
           </div>
 
           {/* Lista de Produtos */}
+          {produtosLoading && (
+            <div className='rounded-2xl border border-orange-100 bg-orange-50/70 p-8 text-center text-stone-600'>Carregando os produtos fresquinhos do dia...</div>
+          )}
+          {!produtosLoading && produtosError && (
+            <div className='rounded-2xl border border-red-100 bg-red-50 p-8 text-center text-red-800'>
+              <p className='font-semibold'>Não foi possível carregar o catálogo agora.</p>
+              <p className='mt-1 text-sm'>Atualize a página ou fale conosco pelo telefone.</p>
+            </div>
+          )}
+          {!produtosLoading && !produtosError && produtosParaExibir.length === 0 && (
+            <div className='rounded-2xl border border-dashed border-orange-200 bg-orange-50/60 p-8 text-center text-stone-600'>
+              <p className='font-semibold'>Nenhum produto encontrado.</p>
+              <p className='mt-1 text-sm'>Tente outra categoria ou limpe os filtros.</p>
+            </div>
+          )}
+          {!produtosLoading && !produtosError && produtosParaExibir.length > 0 && (
           <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6'>
             {produtosParaExibir.map(item => (
               <ProdutoItem
@@ -110,6 +126,7 @@ const Produtos = () => {
               />
             ))}
           </div>
+          )}
         </div>
       </div>
     </div>

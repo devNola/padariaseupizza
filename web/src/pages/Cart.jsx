@@ -1,10 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { CarrinhoContext } from '../context/CarrinhoContext';
 import Titulo from '../components/Titulo';
 import { Button, TextField, Snackbar, Backdrop, CircularProgress } from '@mui/material'; // Importação do Backdrop e CircularProgress
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import api from '../services/api';
 
 const Cart = () => {
   const { produtos, cartItems, updateCartItemQuantity, getCartTotal, removeFromCart, delivery_fee } = useContext(CarrinhoContext);
@@ -51,7 +52,7 @@ const Cart = () => {
     toast.success('Item removido do carrinho!');
   };
 
-  const handleApplyCep = (cep) => {
+  const handleApplyCep = useCallback((cep) => {
     if (cep.length === 9) {
       localStorage.setItem('cep', cep);
       fetch(`https://viacep.com.br/ws/${cep.replace('-', '')}/json/`)
@@ -77,16 +78,16 @@ const Cart = () => {
     } else {
       toast.error('Digite um CEP válido no formato 00000-000.');
     }
-  };
+  }, [delivery_fee]);
 
   useEffect(() => {
     const savedCep = localStorage.getItem('cep');
 
     if (savedCep) {
-      setCep(savedCep)
+      setCep(savedCep);
       handleApplyCep(savedCep);
     }
-  }, [])
+  }, [handleApplyCep]);
 
   const handleFinalizePurchase = async () => {
     if (!isLoggedIn) {
@@ -117,20 +118,20 @@ const Cart = () => {
       };
     });
 
-    // Envia log de pedido finalizado para a API
-    fetch('http://localhost:55000/carrinho/finalizar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    setIsLoading(true);
+    try {
+      await api.post('/carrinho/finalizar', {
         usuario: localStorage.getItem('userName') || 'Visitante',
         produtos: produtosParaApi,
         precoFinal: totalFinal,
         endereco: endereco ? `CEP: ${cep}, ${endereco}` : `CEP: ${cep}`,
-        nomeCliente: localStorage.getItem('userName') || 'Visitante'
-      })
-    });
-
-    setIsLoading(true);
+        nomeCliente: localStorage.getItem('userName') || 'Visitante',
+      });
+    } catch {
+      setIsLoading(false);
+      toast.error('Não foi possível registrar o pedido. Tente novamente.');
+      return;
+    }
 
     // Busca o nome do cliente logado do contexto, se disponível
     let nomeCliente = 'Visitante';

@@ -8,27 +8,27 @@ const Navbar = () => {
     const [visible, setVisible] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const { getCartQuantity } = useContext(CarrinhoContext);
-    const { logout, isLoggedIn, user } = useContext(AuthContext)
+    const { logout, isLoggedIn, user, userType } = useContext(AuthContext)
 
     const toggleProfileDropdown = () => {
         setProfileDropdownOpen(!profileDropdownOpen);
     };
 
     return (
-        <div className='flex items-center justify-between py-5 font-medium'>
+        <div className='storefront-navbar flex items-center justify-between py-5 font-medium'>
             {/* Logo */}
             <Link to='/'>
                 <img src={assets?.logo} className='w-16' alt="Logo" onError={(e) => { e.target.onerror = null; e.target.src = 'caminho/para/imagem/default.png'; }} />
             </Link>
 
             {/* Links de navegação */}
-            <ul className='hidden sm:flex gap-5 text-sm text-gray-700'>
+            <ul className='hidden sm:flex items-center gap-7 text-sm text-stone-600'>
                 {['Home', 'Produtos', 'Sobre', 'Contatos'].map((item, index) => (
                     item === 'Home' ? (
                         <Link
                             key={index}
                             to='/'
-                            className='flex flex-col items-center gap-1 transition-transform transform hover:scale-110'
+                            className='storefront-nav-link flex flex-col items-center gap-1 transition-transform transform hover:scale-110'
                         >
                             <p>{item}</p>
                         </Link>
@@ -37,7 +37,7 @@ const Navbar = () => {
                             key={index}
                             to={`/${item.toLowerCase()}`}
                             className={({ isActive }) =>
-                                `flex flex-col items-center gap-1 transition-transform transform hover:scale-110 ${isActive ? 'active' : ''}`
+                                `storefront-nav-link flex flex-col items-center gap-1 transition-transform transform hover:scale-110 ${isActive ? 'active' : ''}`
                             }
                         >
                             <p>{item}</p>
@@ -50,6 +50,9 @@ const Navbar = () => {
             <div className='flex items-center gap-6'>
                 {/* Ícone de perfil */}
                 <div className='group relative flex items-center gap-4'>
+                    {userType === 'admin' && (
+                        <Link to='/admin' className='hidden sm:inline-flex items-center rounded-full bg-stone-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-orange-700'>Painel admin</Link>
+                    )}
                     {isLoggedIn && user && (
                         <span className='hidden sm:block text-sm text-gray-700'>
                             {user.nome}
@@ -68,15 +71,15 @@ const Navbar = () => {
                             {!isLoggedIn ? (
                                 <Link
                                     to='/login'
-                                    className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200'
+                                    className='block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 transition-colors duration-200'
                                     onClick={() => setProfileDropdownOpen(false)}
                                 >
                                     Entrar
                                 </Link>
                             ) : (
                                 <a
-                                    href="#"
-                                    className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200'
+                                    href="/"
+                                    className='block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 transition-colors duration-200'
                                     onClick={() => {
                                         logout();
                                         setProfileDropdownOpen(false);

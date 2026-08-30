@@ -6,8 +6,11 @@ const ProdutosDestaque = () => {
   const [addedId, setAddedId] = useState(null);
 
   const produtosDestaque = Array.isArray(produtos)
-    ? produtos.filter((produto) => produto.destaque)
+    ? produtos.filter((produto) => produto.destaque).slice(0, 3)
     : [];
+  const produtosParaMostrar = produtosDestaque.length > 0
+    ? produtosDestaque
+    : (Array.isArray(produtos) ? produtos.slice(0, 3) : []);
 
   const handleAddToCart = (id) => {
     addToCart(id);
@@ -22,15 +25,16 @@ const ProdutosDestaque = () => {
         <span className="absolute left-1/2 transform -translate-x-1/2 bottom-[-10px] w-16 h-1 bg-orange-500 rounded"></span>
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto w-full px-4">
-        {produtosDestaque.length === 0 ? (
-          <p className="col-span-full text-center text-gray-500">
-            Não há produtos em destaque no momento.
-          </p>
+        {produtosParaMostrar.length === 0 ? (
+          <div className="col-span-full rounded-2xl border border-dashed border-orange-200 bg-orange-50/60 px-6 py-10 text-center text-stone-600">
+            <p className="font-semibold">Estamos preparando as novidades do forno.</p>
+            <p className="mt-1 text-sm">Volte em instantes ou fale conosco para fazer seu pedido.</p>
+          </div>
         ) : (
-          produtosDestaque.map((produto, index) => (
+          produtosParaMostrar.map((produto, index) => (
             <div
               key={produto.id}
-              className="relative flex flex-col h-full bg-white rounded-xl border border-orange-100 shadow-md hover:shadow-lg transition p-4 items-stretch justify-between min-w-[220px] max-w-xs mx-auto"
+              className="product-card relative flex flex-col h-full bg-white rounded-xl border border-orange-100 shadow-md hover:shadow-lg transition p-4 items-stretch justify-between min-w-[220px] max-w-xs mx-auto"
               style={{ animationDelay: `${index * 0.07}s` }}
             >
               <div className="flex flex-col items-center flex-1">

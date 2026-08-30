@@ -8,17 +8,18 @@ async function main(nome, email, hash) {
   // console.log(nome, email, hash)
 
   // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
-    host: "sandbox.smtp.mailtrap.io",
-    port: 2525,
-    secure: false, // true for 465, false for other ports
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: process.env.SMTP_SECURE === 'true',
     auth: {
-      user: "b4666ac149ef20", // generated ethereal user
-      pass: "44a3e6bb56501b", // generated ethereal password
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
     },
   });
 
-  const link = "http://localhost:3001/trocasenha/"+hash
+  const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+  const link = `${frontendUrl}/trocasenha/${encodeURIComponent(hash)}`;
  
   let mensa = "<h5>Padaria Seu Pizza</h5>"
   mensa += `<h6>Estimado: ${nome}</h6>`
@@ -30,14 +31,14 @@ async function main(nome, email, hash) {
 
   // send mail with defined transport object
   let info = await transporter.sendMail({
-    from: '"Padaria Seu Pizza" <avalrest@email.com>', // sender address
+    from: process.env.MAIL_FROM || 'Padaria Seu Pizza <no-reply@example.com>',
     to: email, // list of receivers
     subject: "Solicitação Alteração de Senha", // Subject line
     text: `Copie e cole o endereço: ${link} para alterar`, // plain text body
     html: mensa, // html body
   });
 
-  console.log("Message sent: %s", info.messageId);
+  return info;
   // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 }
 

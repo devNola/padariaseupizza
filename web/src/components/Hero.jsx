@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 export const Hero = () => {
     return (
-        <section className="relative overflow-hidden border-b border-amber-200 bg-gradient-to-b from-orange-50 to-white">
+        <section className="hero-shell relative overflow-hidden border-b border-amber-200 bg-gradient-to-b from-orange-50 to-white">
             {/* Imagem principal */}
             <div className="w-full relative">
                 <img
@@ -30,13 +30,14 @@ export const Hero = () => {
                         </div>
 
                         {/* Título principal */}
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 font-serif drop-shadow-xl">
+                                                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 font-serif leading-tight drop-shadow-xl">
+
                             <span className="text-amber-300">Pães Artesanais</span> Feitos com Tradição
                         </h1>
 
                         {/* Subtítulo */}
                         <p className="text-lg sm:text-xl lg:text-2xl mb-8 max-w-2xl mx-auto leading-relaxed text-amber-50 drop-shadow">
-                            Descubra o sabor autêntico de nossos produtos feitos diariamente com ingredientes selecionados
+                            Pães, doces e salgados preparados diariamente para deixar seu dia mais gostoso.
                         </p>
 
                         {/* Botão de ação */}

@@ -34,11 +34,6 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const [searchParams] = useSearchParams()
 
-    const isLoggedIn = !!localStorage.getItem('token');
-
-    const nome = localStorage.getItem('nome');
-    const email = localStorage.getItem('email'); // se quiser usar também
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -49,16 +44,20 @@ function Login() {
         setLoading(true);
         try {
             const { email, senha } = formData;
-            console.log({ email, senha }); // Verifique os dados enviados
             const data = await loginUser(email, senha);
+            const userType = data.userType === 'admin' ? 'admin' : 'cliente';
             toast.success('Login realizado com sucesso!');
             localStorage.setItem('token', data.token);
+            localStorage.setItem('userType', userType);
+            if (data.userName) localStorage.setItem('userName', data.userName);
             setIsLoggedIn(true);
-            const redirect = searchParams.get('redirect') || '/';
+            const requestedRedirect = searchParams.get('redirect');
+            const redirect = userType === 'admin'
+                ? (requestedRedirect?.startsWith('/admin') ? requestedRedirect : '/admin')
+                : (requestedRedirect && !requestedRedirect.startsWith('/admin') ? requestedRedirect : '/');
             navigate(redirect, { replace: true });
         } catch (error) {
-            console.error(error.response?.data || error.message); // Verifique o erro retornado
-            toast.error(error.response?.data?.erro || 'Erro ao fazer login');
+            toast.error(error.message || 'Erro ao fazer login');
         } finally {
             setLoading(false);
         }

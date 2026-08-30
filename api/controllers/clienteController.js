@@ -1,11 +1,13 @@
 import { Cliente } from "../models/Cliente.js";
 import { Logs } from "../models/logs.js";
 import { v4 as uuidv4 } from "uuid";
-import jwt from "jsonwebtoken";
+import bcrypt from 'bcrypt';
 
 export const clienteIndex = async (req, res) => {
   try {
-    const clientes = await Cliente.findAll();
+    const clientes = await Cliente.findAll({
+      attributes: ['id', 'nome', 'email', 'admin', 'createdAt'],
+    });
     res.status(200).json(clientes);
   } catch (error) {
     res.status(400).send(error);
@@ -32,13 +34,14 @@ export const clienteCreate = async (req, res) => {
     const id = uuidv4();
     const token = uuidv4();
 
+    const senhaHash = await bcrypt.hash(senha, 12);
     const cliente = await Cliente.create({
       id,
-      senha,
+      senha: senhaHash,
       nome,
       token,
       email,
-      admin: "0",
+      admin: false,
     });
 
     // Criar log para o cliente cadastrado
@@ -48,7 +51,10 @@ export const clienteCreate = async (req, res) => {
       data: new Date(),
     });
 
-    return res.status(201).json({ cliente, token });
+    return res.status(201).json({
+      cliente: { id: cliente.id, nome: cliente.nome, email: cliente.email },
+      token,
+    });
   } catch (error) {
     return res.status(500).send(error);
   }
@@ -63,18 +69,17 @@ export const clienteLogin = async (req, res) => {
       return;
     }
 
-    const cliente = await Cliente.findOne({ where: { email, senha } });
+    const cliente = await Cliente.findOne({ where: { email } });
+    const senhaValida = cliente && (await bcrypt.compare(senha, cliente.senha).catch(() => false) || cliente.senha === senha);
 
-    if (!cliente) {
-      console.log(
-        "Tentativa de login com e-mail:",
-        email,
-        "e senha:",
-        senha,
-        "falhou."
-      );
+    if (!cliente || !senhaValida) {
       res.status(400).json({ erro: "E-mail ou senha incorretos" });
       return;
+    }
+
+    // Migra silenciosamente senhas antigas armazenadas sem hash após um login válido.
+    if (cliente.senha === senha) {
+      await Cliente.update({ senha: await bcrypt.hash(senha, 12) }, { where: { id: cliente.id } });
     }
 
     console.log("Login bem sucedido para o cliente com ID:", cliente.id);
@@ -115,6 +120,7 @@ export const clienteShow = async (req, res) => {
     res.status(200).json({
       id: cliente.id,
       nome: cliente.nome,
+      userType: cliente.admin ? 'admin' : 'cliente',
     });
   } catch (error) {
     console.error("Erro ao buscar cliente:", error);

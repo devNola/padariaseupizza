@@ -1,5 +1,5 @@
 /* Importação de fontes */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&family=Poppins:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Outfit:wght@100..900&display=swap');
 
 /* Configuração base do Tailwind */
 @tailwind base;
@@ -938,4 +938,133 @@ body {
 .btn-sobre:hover {
     background: linear-gradient(90deg, #ffd54f 0%, #ffa000 100%);
     color: #fff;
+}
+
+/* ========== DIREÇÃO VISUAL 2026 — PADARIA ARTESANAL ========== */
+:root {
+    --brand-ink: #3b2118;
+    --brand-cocoa: #6f3f2b;
+    --brand-orange: #d96d32;
+    --brand-gold: #f2b84b;
+    --brand-cream: #fbf6ef;
+    --brand-line: rgba(111, 63, 43, 0.14);
+    --brand-shadow: 0 20px 55px rgba(90, 49, 30, 0.10);
+}
+
+body {
+    background: var(--brand-cream);
+    color: var(--brand-ink);
+}
+
+.storefront-navbar {
+    position: relative;
+    z-index: 20;
+    min-height: 84px;
+    border-bottom: 1px solid var(--brand-line);
+    background: rgba(251, 246, 239, 0.90);
+    backdrop-filter: blur(16px);
+}
+
+.storefront-navbar > a:first-child img {
+    width: 74px;
+    height: 74px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 12px rgba(111, 63, 43, 0.14));
+}
+
+.storefront-nav-link {
+    position: relative;
+    color: #735448;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.storefront-nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -8px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--brand-orange);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 180ms ease-out;
+}
+
+.storefront-nav-link:hover,
+.storefront-nav-link.active {
+    color: var(--brand-orange);
+}
+
+.storefront-nav-link:hover::after,
+.storefront-nav-link.active::after {
+    transform: scaleX(1);
+}
+
+.hero-shell {
+    border-radius: 0 0 32px 32px;
+    overflow: hidden;
+    box-shadow: var(--brand-shadow);
+}
+
+.produtos-destaque-container {
+    padding: clamp(3rem, 7vw, 6rem) 0;
+}
+
+.produtos-destaque-container > h2 {
+    color: var(--brand-ink) !important;
+    font-family: 'Fraunces', Georgia, serif;
+    letter-spacing: -0.025em;
+}
+
+.produtos-destaque-container > h2 span {
+    background: var(--brand-orange) !important;
+}
+
+.produtos-destaque-container .product-card {
+    border: 1px solid var(--brand-line);
+    border-radius: 24px;
+    background: rgba(255, 253, 249, 0.94);
+    box-shadow: 0 14px 35px rgba(90, 49, 30, 0.08);
+    transition: transform 180ms ease-out, box-shadow 180ms ease-out;
+}
+
+.produtos-destaque-container .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 22px 48px rgba(90, 49, 30, 0.14);
+}
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid rgba(217, 109, 50, 0.35);
+    outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+    .storefront-navbar {
+        min-height: 72px;
+    }
+
+    .storefront-navbar > a:first-child img {
+        width: 62px;
+        height: 62px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

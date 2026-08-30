@@ -1,144 +1,114 @@
-import { createContext, useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { createContext, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import api from '../services/api';
 
 export const CarrinhoContext = createContext();
 
-const CarrinhoContextProvider = (props) => {
+const CarrinhoContextProvider = ({ children }) => {
     const currency = 'R$';
     const delivery_fee = 5;
     const [cartItems, setCartItems] = useState(() => {
         const savedCart = localStorage.getItem('cart');
-        
         if (!savedCart) return {};
 
         try {
             const parsedCart = JSON.parse(savedCart);
-            return parsedCart;
-        } catch (error) {
-            console.error("Erro ao analisar o carrinho do localStorage:", error);
+            return parsedCart && typeof parsedCart === 'object' ? parsedCart : {};
+        } catch {
             return {};
         }
     });
     const [produtos, setProdutos] = useState([]);
+    const [produtosLoading, setProdutosLoading] = useState(true);
+    const [produtosError, setProdutosError] = useState(false);
 
     useEffect(() => {
         localStorage.setItem('cart', JSON.stringify(cartItems));
-    }, [cartItems])
-
-    // Fetch products from API
-    useEffect(() => {
-        fetch('http://localhost:55000/api/padaria')
-            .then(response => response.json())
-            .then(data => {
-                setProdutos(data);
-            })
-            .catch(error => console.error("Erro ao buscar produtos:", error));
-    }, []);
-
-    useEffect(() => {
-        console.log("cartItems mudou:", cartItems);
     }, [cartItems]);
 
     useEffect(() => {
-        console.log("PRODUTOS CARREGADOS DO BACKEND:", produtos);
-    }, [produtos]);
+        let active = true;
+
+        const fetchProdutos = async () => {
+            setProdutosLoading(true);
+            setProdutosError(false);
+            try {
+                const response = await api.get('/api/padaria');
+                if (active) setProdutos(Array.isArray(response.data) ? response.data : []);
+            } catch {
+                if (active) setProdutosError(true);
+            } finally {
+                if (active) setProdutosLoading(false);
+            }
+        };
+
+        fetchProdutos();
+        return () => { active = false; };
+    }, []);
 
     const addToCart = (itemId, size = 'default') => {
         const idStr = String(itemId);
-        setCartItems(prevCartItems => {
+        setCartItems((prevCartItems) => {
             const updatedCart = { ...prevCartItems };
-
-            if (!updatedCart[idStr]) {
-                updatedCart[idStr] = { [size]: 1 };
-            } else if (!updatedCart[idStr][size]) {
-                updatedCart[idStr][size] = 1;
-            } else {
-                updatedCart[idStr][size] += 1;
-            }
-
+            if (!updatedCart[idStr]) updatedCart[idStr] = { [size]: 1 };
+            else if (!updatedCart[idStr][size]) updatedCart[idStr][size] = 1;
+            else updatedCart[idStr][size] += 1;
             return updatedCart;
         });
 
-        toast.success('Produto Adicionado ao Carrinho');
-
-        // Envia log para a API
-        const produto = produtos.find(p => String(p.id) === String(itemId));
+        toast.success('Produto adicionado ao carrinho');
+        const produto = produtos.find((item) => String(item.id) === idStr);
         if (produto) {
-            fetch('http://localhost:55000/carrinho/adicionar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    usuario: localStorage.getItem('userName') || 'Visitante',
-                    nomeProduto: produto.nome
-                })
-            }).catch(() => { });
+            api.post('/carrinho/adicionar', {
+                usuario: localStorage.getItem('userName') || 'Visitante',
+                nomeProduto: produto.nome,
+            }).catch(() => undefined);
         }
     };
 
     const updateCartItemQuantity = (itemId, size, quantity) => {
-        console.log("updateCartItemQuantity chamado com:", itemId, size, quantity);
-        setCartItems(prevCartItems => {
+        const idStr = String(itemId);
+        setCartItems((prevCartItems) => {
             const updatedCart = { ...prevCartItems };
-
-            if (updatedCart[itemId] && updatedCart[itemId][size] !== undefined) {
-                updatedCart[itemId][size] += quantity;
-
-                if (updatedCart[itemId][size] <= 0) {
-                    delete updatedCart[itemId][size];
-
-                    if (Object.keys(updatedCart[itemId]).length === 0) {
-                        delete updatedCart[itemId];
-                    }
+            if (updatedCart[idStr]?.[size] !== undefined) {
+                updatedCart[idStr][size] += quantity;
+                if (updatedCart[idStr][size] <= 0) {
+                    delete updatedCart[idStr][size];
+                    if (Object.keys(updatedCart[idStr]).length === 0) delete updatedCart[idStr];
                 }
             }
-
-            console.log("Novo estado do carrinho após updateCartItemQuantity:", updatedCart);
             return updatedCart;
         });
     };
 
     const removeFromCart = (itemId, size = 'default') => {
         const idStr = String(itemId);
-        setCartItems(prevCartItems => {
+        setCartItems((prevCartItems) => {
             const updatedCart = { ...prevCartItems };
-            if (updatedCart[idStr] && updatedCart[idStr][size] !== undefined) {
+            if (updatedCart[idStr]?.[size] !== undefined) {
                 delete updatedCart[idStr][size];
-                if (Object.keys(updatedCart[idStr]).length === 0) {
-                    delete updatedCart[idStr];
-                }
+                if (Object.keys(updatedCart[idStr]).length === 0) delete updatedCart[idStr];
             }
             return updatedCart;
         });
     };
 
-    const getCartTotal = () => {
-        let total = 0;
+    const getCartTotal = () => Object.entries(cartItems).reduce((total, [itemId, sizes]) => {
+        const produto = produtos.find((item) => String(item.id) === String(itemId));
+        if (!produto) return total;
+        const quantity = Object.values(sizes).reduce((sum, value) => sum + Number(value || 0), 0);
+        return total + quantity * Number(produto.preco || 0);
+    }, 0);
 
-        for (const itemId in cartItems) {
-            for (const size in cartItems[itemId]) {
-                const quantidade = cartItems[itemId][size];
-                const produto = produtos.find(p => String(p.id) === String(itemId)); // <-- ajuste aqui
-
-                if (produto && quantidade > 0) {
-                    total += quantidade * produto.preco;
-                }
-            }
-        }
-        return total;
-    };
-
-    const getCartQuantity = () => {
-        let quantity = 0;
-        for (const itemId in cartItems) {
-            for (const size in cartItems[itemId]) {
-                quantity += cartItems[itemId][size];
-            }
-        }
-        return quantity;
-    };
+    const getCartQuantity = () => Object.values(cartItems).reduce(
+        (total, sizes) => total + Object.values(sizes).reduce((sum, value) => sum + Number(value || 0), 0),
+        0,
+    );
 
     const value = {
         produtos,
+        produtosLoading,
+        produtosError,
         currency,
         delivery_fee,
         setProdutos,
@@ -146,15 +116,11 @@ const CarrinhoContextProvider = (props) => {
         addToCart,
         updateCartItemQuantity,
         getCartTotal,
-        getCartQuantity, 
-        removeFromCart
+        getCartQuantity,
+        removeFromCart,
     };
 
-    return (
-        <CarrinhoContext.Provider value={value}>
-            {props.children}
-        </CarrinhoContext.Provider>
-    );
+    return <CarrinhoContext.Provider value={value}>{children}</CarrinhoContext.Provider>;
 };
 
 export default CarrinhoContextProvider;

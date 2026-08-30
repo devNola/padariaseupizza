@@ -31,21 +31,22 @@ import {
   obterTodosOsLogs,
 } from "./controllers/admincontroller.js";
 import { verificaLogin } from "./middlewares/verificaLogin.js";
+import { verificaAdmin } from './middlewares/verificaAdmin.js';
 
 
 const router = Router();
 
 // Clientes/Admins
 router
-  .get("/clienteslistar", clienteIndex)
+  .get("/clienteslistar", verificaAdmin, clienteIndex)
   .post("/clientes", clienteCreate)
   .post("/login", clienteLogin)
-  .get("/loginadmin", adminLogin)
+  .post("/loginadmin", adminLogin)
   .post("/criarloginadmin", adminCreate)
   .get('/clientes/:token', clienteShow)
   // Logs admins
-  .post("/setlogs", logsCreate)
-  .get("/logs", obterTodosOsLogs);
+  .post("/setlogs", verificaAdmin, logsCreate)
+  .get("/logs", verificaAdmin, obterTodosOsLogs);
 
 // Logs de Carrinho/Finalizar Compra
 router.post('/carrinho/adicionar', adicionarAoCarrinho);
@@ -56,10 +57,10 @@ router.post('/carrinho/finalizar', finalizarCompra);
 router
   .get("/api/padaria", padariaIndex)
   .get("/padaria/destaques", padariaDestaques)
-  .post("/padariacreat", upload.single("imagem"), padariaCreate)
-  .post("/padariaDestaca/:id", padariaDestaca)
-  .delete("/padaria/destroy/:id", padariaDestroy)
-  .put("/alterar/:id", upload.single("imagem"), PadariaUpdate);
+  .post("/padariacreat", verificaAdmin, upload.single("imagem"), padariaCreate)
+  .post("/padariaDestaca/:id", verificaAdmin, padariaDestaca)
+  .delete("/padaria/destroy/:id", verificaAdmin, padariaDestroy)
+  .put("/alterar/:id", verificaAdmin, upload.single("imagem"), PadariaUpdate);
 
 // Avaliações
 router

@@ -1,0 +1,190 @@
+/* Estilo geral de fundo */
+.bgcolor {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+/* Gradiente vibrante */
+.gradient {
+    background: linear-gradient(158deg, #dda708 0%, #c56414 100%);
+    border-radius: 8px;
+}
+
+/* Gradiente mais suave */
+.gradientlight {
+    background: linear-gradient(158deg, #358a94 0%, #f7d204 100%);
+    border-radius: 8px;
+}
+
+/* Título de preço */
+.pricetitle {
+    font-weight: bold;
+    font-size: 20px;
+    color: #222;
+    /* Texto mais escuro */
+}
+
+/* Subtítulo de preço */
+.pricesubtitle {
+    font-size: 14px;
+    color: #666;
+    /* Tom mais suave */
+}
+
+/* Estilo do ícone */
+.iconstyle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: #eef4ff;
+    /* Fundo para o ícone */
+    border-radius: 50%;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    /* Suaviza a transformação */
+}
+
+.iconstyle:hover {
+    transform: rotate(20deg);
+    /* Rotação suave ao passar o mouse */
+}
+
+/* Contêiner do cartão */
+.card-container {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    /* Bordas arredondadas */
+    padding: 15px;
+    background-color: white;
+    /* Fundo branco para contraste */
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);
+    /* Sombra */
+}
+
+.card-container:hover {
+    transform: translateY(-5px);
+    /* Elevação ao passar o mouse */
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    /* Sombra mais intensa */
+}
+
+/* Conteúdo do cartão */
+.card-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    /* Espaço entre ícone e texto */
+}
+
+/* HOME DASHBOARD PERSONALIZADO */
+
+/* Título principal */
+.home-title {
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #a0522d;
+    margin-bottom: 32px;
+    letter-spacing: 1px;
+    text-align: left;
+}
+
+/* Card de logs */
+.card-dashboard {
+    border-radius: 18px !important;
+    box-shadow: 0 4px 24px 0 rgba(160, 82, 45, 0.08), 0 1.5px 6px 0 rgba(255, 165, 0, 0.10);
+    background: #fffbe9 !important;
+    border: 1px solid #ffe0b2;
+    transition: box-shadow 0.2s;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.card-dashboard .MuiTypography-h6 {
+    color: #a0522d;
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    font-weight: 700;
+}
+
+.card-dashboard .MuiAvatar-root {
+    border: 2px solid #ffe0b2;
+    box-shadow: 0 2px 8px #ffe0b2;
+    background: #fff8e1;
+}
+
+.card-dashboard .MuiListItemText-primary {
+    color: #a0522d;
+    font-weight: 600;
+}
+
+.card-dashboard .MuiListItemText-secondary {
+    color: #8d5524 !important;
+}
+
+.card-dashboard .MuiDivider-root {
+    margin: 8px 0;
+}
+
+/* SIDENAV PADARIA VISUAL */
+.padaria-sidenav .MuiDrawer-paper {
+    background: linear-gradient(180deg, #fff8e1 0%, #ffe0b2 100%) !important;
+    border-right: 1.5px solid #ffe0b2;
+    box-shadow: 2px 0 12px 0 rgba(160, 82, 45, 0.08);
+}
+
+.padaria-sidenav .MuiAvatar-root {
+    background: #fffbe9;
+    border: 2px solid #ffe0b2;
+    color: #a0522d;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.padaria-sidenav .MuiTypography-h6 {
+    color: #a0522d !important;
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.padaria-sidenav .MuiListItemButton-root {
+    border-radius: 8px;
+    margin-bottom: 4px;
+    color: #a0522d;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.padaria-sidenav .MuiListItemButton-root:hover,
+.padaria-sidenav .Mui-selected,
+.padaria-sidenav .Mui-selected:hover {
+    background: #ffe0b2 !important;
+    color: #ff9800 !important;
+}
+
+.padaria-sidenav .MuiListItemIcon-root {
+    color: #a0522d !important;
+}
+
+.padaria-sidenav .MuiDivider-root {
+    border-color: #ffe0b2 !important;
+}
+
+/* NAVBAR PADARIA VISUAL */
+.padaria-navbar {
+    background: linear-gradient(90deg, #fff8e1 0%, #ffe0b2 100%) !important;
+    box-shadow: 0 2px 10px rgba(160, 82, 45, 0.08);
+    border-bottom: 1.5px solid #ffe0b2;
+    backdrop-filter: blur(6px);
+}
+
+@media (max-width: 900px) {
+    .home-title {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+}

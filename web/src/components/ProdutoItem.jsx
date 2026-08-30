@@ -15,7 +15,7 @@ const ProdutoItem = ({ id, imagem, nome, preco, descricao }) => {
     }, [addToCart, id]);
 
     return (
-        <div className="relative flex flex-col h-full bg-white rounded-xl border border-orange-100 shadow-md hover:shadow-lg transition p-4 items-stretch justify-between min-w-[220px] max-w-xs mx-auto">
+        <div className="product-card relative flex flex-col h-full bg-white rounded-xl border border-orange-100 shadow-md hover:shadow-lg transition p-4 items-stretch justify-between min-w-[220px] max-w-xs mx-auto">
             <div className="flex flex-col items-center flex-1">
                 <img
                     src={imagemSrc}
@@ -29,8 +29,10 @@ const ProdutoItem = ({ id, imagem, nome, preco, descricao }) => {
                   {descricao ? descricao : '\u00A0'}
                 </div>
             </div>
-            <button
-                className="mt-auto w-full py-2 rounded-full bg-orange-400 hover:bg-orange-500 text-white font-bold text-sm shadow transition focus:outline-none focus:ring-2 focus:ring-orange-300"
+                                <button
+                      type="button"
+                      className="mt-auto w-full py-2 rounded-full bg-orange-400 hover:bg-orange-500 text-white font-bold text-sm shadow transition focus:outline-none focus:ring-2 focus:ring-orange-300"
+
                 onClick={handleAddToCart}
                 aria-label={`Adicionar ${nome} ao carrinho`}
             >

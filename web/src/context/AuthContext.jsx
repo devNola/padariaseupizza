@@ -1,52 +1,71 @@
-import { createContext, useState, useEffect } from "react";
-import { getUser } from "../services/api";
-import { toast } from "react-toastify";
+import { createContext, useEffect, useState } from 'react';
+import { getUser } from '../services/api';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem('token')));
   const [user, setUser] = useState(null);
-
-  const checkLogin = () => setIsLoggedIn(!!localStorage.getItem("token"));
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setIsLoggedIn(false);
-  }
+  const [userType, setUserType] = useState(localStorage.getItem('userType') || null);
+  const [authLoading, setAuthLoading] = useState(Boolean(localStorage.getItem('token')));
 
   useEffect(() => {
-    checkLogin();
-    window.addEventListener("storage", checkLogin);
-    return () => window.removeEventListener("storage", checkLogin);
+    const syncSession = () => {
+      const hasToken = Boolean(localStorage.getItem('token'));
+      setIsLoggedIn(hasToken);
+      setUserType(localStorage.getItem('userType') || null);
+      if (!hasToken) setAuthLoading(false);
+    };
+
+    syncSession();
+    window.addEventListener('storage', syncSession);
+    return () => window.removeEventListener('storage', syncSession);
   }, []);
 
-  console.log({ user })
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('nome');
+    localStorage.removeItem('email');
+    setUser(null);
+    setUserType(null);
+    setIsLoggedIn(false);
+    setAuthLoading(false);
+  };
 
   useEffect(() => {
     if (!isLoggedIn) {
       setUser(null);
-      return;
+      setAuthLoading(false);
+      return undefined;
     }
 
-    const token = localStorage.getItem("token");
-
+    const token = localStorage.getItem('token');
     if (!token) {
-      setIsLoggedIn(false);
-      return;
+      logout();
+      return undefined;
     }
 
+    setAuthLoading(true);
     getUser(token)
       .then((data) => {
+        const resolvedType = data.userType === 'admin' ? 'admin' : 'cliente';
         setUser(data);
+        setUserType(resolvedType);
+        localStorage.setItem('userType', resolvedType);
+        if (data.nome) localStorage.setItem('userName', data.nome);
       })
-      .catch((error) => {
-        toast.error(`Erro ao obter usuário: ${error.message}`);
-      });
-  }, [isLoggedIn])
+      .catch(() => {
+        logout();
+      })
+      .finally(() => setAuthLoading(false));
+
+    return undefined;
+  }, [isLoggedIn]);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, logout, user }}>
+    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, logout, user, userType, setUserType, authLoading }}>
       {children}
     </AuthContext.Provider>
   );
